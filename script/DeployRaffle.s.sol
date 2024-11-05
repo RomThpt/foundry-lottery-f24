@@ -2,6 +2,6 @@
 
 pragma solidity ^0.8.19;
 
-import {Script} from 'forge-std/Script.sol';
+import {Script} from "forge-std/Script.sol";
 
-contract DeployRaffle is Script{}
+contract DeployRaffle is Script {}
