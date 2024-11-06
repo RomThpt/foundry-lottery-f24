@@ -1,12 +1,12 @@
 //SPDX-License-Identifier: MIT
 pragma solidity ^0.8.19;
 
-import {Script} from "forge-std/Script.sol";
+import {Script, console} from "forge-std/Script.sol";
 import {VRFCoordinatorV2_5Mock} from "@chainlink/contracts/src/v0.8/vrf/mocks/VRFCoordinatorV2_5Mock.sol";
 
 abstract contract CodeConstants {
     uint256 public constant ENTRANCE_FEE = 0.01 ether;
-    uint256 public constant INTERVAL = 30;
+    uint256 public constant INTERVAL = 30 seconds;
     bytes32 public constant KEY_HASH = 0x787d74caea10b2b357790d5b5247c2f63d1d91572a9846f780606e4d953677ae;
     uint256 public constant SUBSCRIPTION_ID = 8119;
     uint32 public constant CALLBACK_GAS_LIMIT = 200000;
@@ -71,12 +71,13 @@ contract HelperConfig is Script, CodeConstants {
         VRFCoordinatorV2_5Mock vrfCoordinatorMock = new VRFCoordinatorV2_5Mock(BASE_FEE, GAS_PRICE, WEI_PER_UNIT_LINK);
         config = NetworkConfig({
             entranceFee: ENTRANCE_FEE,
-            interval: INTERVAL,
+            interval: 30,
             vrfCoordinator: address(vrfCoordinatorMock),
             keyHash: KEY_HASH, //doesnt matter
             subscriptionId: SUBSCRIPTION_ID,
             callBackGasLimit: CALLBACK_GAS_LIMIT //doenst matter
         });
+        console.log("interval", config.interval);
         vm.stopBroadcast();
     }
 

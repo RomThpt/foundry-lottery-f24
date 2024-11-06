@@ -25,11 +25,11 @@ contract Raffle is VRFConsumerBaseV2Plus {
     }
 
     // Constants
-    uint256 private immutable i_entranceFee = 1 ether;
-    uint256 private immutable i_interval = 1 days;
+    uint256 private immutable i_entranceFee;
+    uint256 private immutable i_interval;
     bytes32 private immutable i_keyHash;
-    uint256 private immutable i_subscriptionId = 0.1 ether;
-    uint32 private immutable i_callBackGasLimit = 20000;
+    uint256 private immutable i_subscriptionId;
+    uint32 private immutable i_callBackGasLimit;
     uint16 private constant REQUEST_CONFIRMATIONS = 3;
     uint32 private constant NUM_WORDS = 1;
 
@@ -76,22 +76,13 @@ contract Raffle is VRFConsumerBaseV2Plus {
         emit PlayerEntered(msg.sender, msg.value, s_totalPlayedAmount);
     }
 
-    /**
-     * @notice This function the function that Chainlink nodes that will call to see if the lottery is ready to have a winner picked.
-     * 1. The time interval has passed
-     * 2. The lottery is in the OPEN state
-     * 3. The contrat has ETH
-     * 4. Implicity, subscription has LINK
-     * @param - ignored
-     * @return upkeppNeeded - true if its time to pick a winner
-     */
-    function checkUpkeep(bytes memory /*checkData*/ ) public view returns (bool upkeppNeeded, bytes memory) {
-        bool timePassed = (block.timestamp - s_lastTimestamp) >= i_interval;
-        bool isOpen = s_raffleState == RaffleState.OPEN;
-        bool hasBalance = address(this).balance > 0;
+    function checkUpkeep(bytes memory /* checkData */ ) public view returns (bool upkeepNeeded, bytes memory) {
+        bool isOpen = RaffleState.OPEN == s_raffleState;
+        bool timePassed = (block.timestamp - s_lastTimestamp) > i_interval;
         bool hasPlayers = s_players.length > 0;
-        upkeppNeeded = timePassed && isOpen && hasBalance && hasPlayers;
-        return (upkeppNeeded, hex"");
+        bool hasBalance = address(this).balance > 0;
+        upkeepNeeded = (timePassed && isOpen && hasBalance && hasPlayers);
+        return (upkeepNeeded, "0x0"); // can we comment this out?
     }
 
     function performUpkeep(bytes calldata /*calldata*/ ) external {
@@ -129,7 +120,47 @@ contract Raffle is VRFConsumerBaseV2Plus {
     }
 
     /* Getters */
-    function getEntranceFee() public pure returns (uint256) {
+    function getEntranceFee() public view returns (uint256) {
         return i_entranceFee;
+    }
+
+    function getInterval() public view returns (uint256) {
+        return i_interval;
+    }
+
+    function getKeyHash() public view returns (bytes32) {
+        return i_keyHash;
+    }
+
+    function getSubscriptionId() public view returns (uint256) {
+        return i_subscriptionId;
+    }
+
+    function getCallBackGasLimit() public view returns (uint32) {
+        return i_callBackGasLimit;
+    }
+
+    function getPlayers() public view returns (address[] memory) {
+        return s_players;
+    }
+
+    function getTotalPlayedAmount() public view returns (uint256) {
+        return s_totalPlayedAmount;
+    }
+
+    function getLastTimestamp() public view returns (uint256) {
+        return s_lastTimestamp;
+    }
+
+    function getWinners() public view returns (address[] memory) {
+        return s_winners;
+    }
+
+    function getRaffleState() public view returns (RaffleState) {
+        return s_raffleState;
+    }
+
+    function getPlayer(uint256 index) public view returns (address) {
+        return s_players[index];
     }
 }
